@@ -1,3 +1,6 @@
 .vs/
 SiteCrawler/obj/
 SiteCrawler/bin/
+GenericSiteCrawler/bin/
+GenericSiteCrawler/obj/
+packages/

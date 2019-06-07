@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27428.2037
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SiteCrawler", "SiteCrawler\SiteCrawler.csproj", "{DF6B79E0-050E-4E3E-861F-B91D6440078F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenericSiteCrawler", "GenericSiteCrawler\GenericSiteCrawler.csproj", "{3AFEAE6B-1DA4-4521-B127-6860E2CAEA27}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{DF6B79E0-050E-4E3E-861F-B91D6440078F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF6B79E0-050E-4E3E-861F-B91D6440078F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF6B79E0-050E-4E3E-861F-B91D6440078F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AFEAE6B-1DA4-4521-B127-6860E2CAEA27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AFEAE6B-1DA4-4521-B127-6860E2CAEA27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AFEAE6B-1DA4-4521-B127-6860E2CAEA27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AFEAE6B-1DA4-4521-B127-6860E2CAEA27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
