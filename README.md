@@ -8,3 +8,11 @@ Develope a generic site crawler library, that provides basic services to travers
 
 * Develope a basic crawler component as described above
 * A sample console application that uses the crawler component to save all site pages for a given url as static files to the file system.
+
+## How to use
+
+* Start in console
+```
+SiteCrawler <website.de>
+```
+* Start SiteCrawler.exe. Type <website.de>
