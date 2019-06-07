@@ -33,6 +33,9 @@ namespace GenericSiteCrawler.Services
             if (!Directory.Exists(Path.GetDirectoryName(filePath)))
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
+            if (!Path.HasExtension(filePath))
+                filePath = filePath + ".htm";
+
             var links = new LinkExtractor(html, html).StartExtract();
             new FileSaver().Save(filePath,
                 LinkReplacer.Replace(html, links, SiteDomain));

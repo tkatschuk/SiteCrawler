@@ -1,10 +1,6 @@
 ﻿using GenericSiteCrawler;
 using NLog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SiteCrawler
 {
@@ -14,7 +10,19 @@ namespace SiteCrawler
 
         static void Main(string[] args)
         {
-            var crawler = new Crawler("zahnarzt-broska.de");
+            string url = "";
+            if (args.Length > 0)
+                url = args[0];
+            else
+            {
+                Console.WriteLine("Enter your site domain, e.g. reply.de");
+                url = Console.ReadLine();
+            }
+
+            if (string.IsNullOrEmpty(url))
+                url = "www.zahnarzt-broska.de";
+
+            var crawler = new Crawler(url);
             crawler.OnError += Crawler_OnError;
             crawler.Start();
             
@@ -24,6 +32,7 @@ namespace SiteCrawler
         private static void Crawler_OnError(string message)
         {
             Console.WriteLine(message);
+            logg.Error(message);
         }
     }
 }

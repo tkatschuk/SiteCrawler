@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -25,11 +26,19 @@ namespace GenericSiteCrawler.Services
             foreach(var m in mathes)
             {
                 var url = m.ToString();
+                if (url.Contains("comsys"))
+                {
+                    var a = 2;
+                }
                 if (!string.IsNullOrEmpty(url))
                 {
                     url = url.Trim().Remove(0, url.IndexOf("=\"") + 2).TrimEnd('"');
-                    if (url[0] == '/' || url.Contains(DomainUrl))
-                        result.Add(url);
+                    if (!string.IsNullOrEmpty(url))
+                    {
+                        if (!(url.Contains("http") && !url.Contains(DomainUrl)))
+                            if (url != "javascript:void(0)" || url[0] == '/' || url.Contains(DomainUrl))
+                                result.Add(url);
+                    }
                 }
             }
             return result.Distinct().ToList();

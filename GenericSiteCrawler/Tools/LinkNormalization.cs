@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace GenericSiteCrawler.Tools
 {
@@ -21,12 +22,24 @@ namespace GenericSiteCrawler.Tools
 
         public static string GetFilePathFromUrl(string link, string domain, bool isRelative = false)
         {
-            link = link.Replace("https://", "").Replace("http://", "").Replace(domain, "");
+            var rootPath = AppDomain.CurrentDomain.BaseDirectory;
+
+            link = link.Replace("https://", "").Replace("http://", "").Replace(domain, "").Replace('?', '_').Replace('#', '_');
             if (string.IsNullOrEmpty(link))
                 link = "index.html";
+
+            if (link.Contains("\""))
+                link = link.Remove(link.IndexOf('"'), link.Length - link.IndexOf('"'));
+
             if (link[0] == '/')
                 link = link.Remove(0, 1);
-            return (isRelative ? "" : "domain\\") + link.Replace('/', '\\');
+
+            link = Path.Combine(rootPath, "domain", link);
+
+            if (!Path.HasExtension(link))
+                link = link + ".htm";
+
+            return link;
         }
     }
 }
