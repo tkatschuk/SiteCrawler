@@ -1,47 +1,49 @@
-﻿using NLog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace GenericSiteCrawler.Services
 {
     public class PageDownloader
     {
-        private static readonly Logger logg = LogManager.GetLogger(nameof(PageDownloader));
+        public delegate void MethodContainerSuccess(string html, string url);
+        public event MethodContainerSuccess OnSuccess;
+
+        public delegate void MethodContainerPageError(string link, string message);
+        public event MethodContainerPageError OnPageError;
 
         private string PageUrl { get; set; }
 
-        public PageDownloader(string url)
+        public PageDownloader(string pageUrl)
         {
-            PageUrl = url;
+            PageUrl = pageUrl;
         }
 
-        public void Download()
+        public void StartDownload()
         {
             var client = new WebClient()
             {
                 Encoding = Encoding.UTF8
             };
-            client.DownloadStringCompleted += (s, e) =>
-            {
-                if (e.Error != null)
-                    ThrowError($"{e.Error.Message} by downloading [{PageUrl}]");
-                if (string.IsNullOrEmpty(e.Result))
-                    ThrowError($"Result is empty by downloading [{PageUrl}]");
-
-
-            };
+            client.DownloadStringCompleted += Client_DownloadStringCompleted;
             var url = new Uri(PageUrl);
             client.DownloadStringAsync(url);
         }
 
-        private void ThrowError(string message)
+        private void Client_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
-            logg.Error(message);
-            throw new Exception(message);
+            if (e.Error != null)
+            {
+                OnPageError(PageUrl, e.Error.Message);
+                return;
+            }
+            if (string.IsNullOrEmpty(e.Result))
+            {
+                OnPageError(PageUrl, $"Page is empty");
+                return;
+            }
+
+            OnSuccess(e.Result, PageUrl);
         }
     }
 }

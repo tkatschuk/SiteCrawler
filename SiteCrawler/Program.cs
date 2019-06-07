@@ -14,9 +14,16 @@ namespace SiteCrawler
 
         static void Main(string[] args)
         {
-            var crawler = new Crawler();
-            crawler.Start("http://zahnarzt-broska.de");
+            var crawler = new Crawler("zahnarzt-broska.de");
+            crawler.OnError += Crawler_OnError;
+            crawler.Start();
+            
             Console.ReadKey();
+        }
+
+        private static void Crawler_OnError(string message)
+        {
+            Console.WriteLine(message);
         }
     }
 }
