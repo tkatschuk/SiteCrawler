@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using GenericSiteCrawler.Models;
 using GenericSiteCrawler.Services;
-using GenericSiteCrawler.Tools;
 
 namespace GenericSiteCrawler
 {
