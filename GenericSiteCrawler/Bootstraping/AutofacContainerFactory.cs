@@ -19,12 +19,12 @@ namespace GenericSiteCrawler.Bootstraping
             // Repositories
             builder.RegisterAssemblyTypes(typeof(WebsiteRepository).Assembly)
                 .Where(t => t.Name.EndsWith("Repository"))
-                .AsImplementedInterfaces().InstancePerLifetimeScope();
+                .AsImplementedInterfaces();
 
             // Services
             builder.RegisterAssemblyTypes(typeof(WebsiteService).Assembly)
                 .Where(t => t.Name.EndsWith("Service"))
-                .AsImplementedInterfaces().InstancePerLifetimeScope();
+                .AsImplementedInterfaces();
 
             return builder.Build();
         }

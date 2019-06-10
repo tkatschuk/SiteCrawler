@@ -24,5 +24,15 @@ namespace GenericSiteCrawler.Data.Service
         {
             return await _pageRepository.GetManyAsync(x => x.Website.Id == webSiteId);
         }
+
+        public void CreatePage(Page page)
+        {
+            _pageRepository.Add(page);
+        }
+
+        public async Task SavePageAsync()
+        {
+            await _unitOfWork.CommitAsync();
+        }
     }
 }

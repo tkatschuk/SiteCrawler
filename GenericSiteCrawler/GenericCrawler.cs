@@ -1,4 +1,5 @@
-﻿using GenericSiteCrawler.Data.Service.Interface;
+﻿using GenericSiteCrawler.Data.DomainModel;
+using GenericSiteCrawler.Data.Service.Interface;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,8 +18,18 @@ namespace GenericSiteCrawler
         public async Task TestDB()
         {
             Console.WriteLine($"TestDB");
-            var pages = await _pageService.GetAllPagesAsync(0);
+            var pages = await _pageService.GetAllPagesAsync(1);
             Console.WriteLine($"pages = {pages.Count()}");
+            _pageService.CreatePage(new Page()
+            {
+                Url = "test url 2",
+                Website = new Website()
+                {
+                    EnterUrl = "sdfsdfsdf3"
+                }
+            });
+            await _pageService.SavePageAsync();
+            Console.WriteLine("Saved");
         }
     }
 }

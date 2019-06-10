@@ -28,11 +28,7 @@ namespace SiteCrawler
             var crawler = new Crawler(url);
             crawler.OnError += Crawler_OnError;
             crawler.Start();
-            while (crawler.IsInProcess)
-            {
-
-            }
-            Console.WriteLine();
+            Console.WriteLine("END");
             Console.ReadKey();
         }
 

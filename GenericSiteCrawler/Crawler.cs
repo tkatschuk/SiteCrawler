@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Autofac;
 using GenericSiteCrawler.Bootstraping;
 using GenericSiteCrawler.Services;
@@ -7,13 +8,12 @@ namespace GenericSiteCrawler
 {
     public class Crawler
     {
-        public bool IsInProcess { get; set; }
-
         public delegate void MethodContainerError(string message);
         public event MethodContainerError OnError;
 
         private List<string> DownloadedPages { get; set; } = new List<string>();
 
+        private bool IsInProcess { get; set; }
         private MainService mainService;
         private string Domain { get; set; }
 
