@@ -1,6 +1,9 @@
 ﻿using GenericSiteCrawler.Data.Repositories.Interfaces;
 using GenericSiteCrawler.Data.Service.Interface;
 using GenericSiteCrawler.Data.Infrastructure;
+using GenericSiteCrawler.Data.DomainModel;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GenericSiteCrawler.Data.Service
 {
@@ -15,6 +18,11 @@ namespace GenericSiteCrawler.Data.Service
         {
             _pageRepository = pageRepository;
             _unitOfWork = unitOfWork;
+        }
+
+        public async Task<IEnumerable<Page>> GetAllPagesAsync(int webSiteId)
+        {
+            return await _pageRepository.GetManyAsync(x => x.Website.Id == webSiteId);
         }
     }
 }

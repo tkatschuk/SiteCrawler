@@ -6,6 +6,8 @@ namespace GenericSiteCrawler.Data.DomainModel
     {
         public int Id { get; set; }
 
+        public Website Website { get; set; }
+
         public string Url { get; set; }
 
         public bool Downloaded { get; set; }

@@ -20,12 +20,19 @@ namespace SiteCrawler
             }
 
             if (string.IsNullOrEmpty(url))
-                url = "www.zahnarzt-broska.de";
+            {
+                Console.WriteLine($"Domain is empty");
+                return;
+            }
 
             var crawler = new Crawler(url);
             crawler.OnError += Crawler_OnError;
             crawler.Start();
-            
+            while (crawler.IsInProcess)
+            {
+
+            }
+            Console.WriteLine();
             Console.ReadKey();
         }
 
