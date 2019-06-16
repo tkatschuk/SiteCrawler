@@ -2,6 +2,7 @@
 using GenericSiteCrawler.Data.Service.Interface;
 using GenericSiteCrawler.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,8 +13,12 @@ namespace GenericSiteCrawler
         private readonly IPageService _pageService;
         private readonly IWebsiteService _websiteService;
 
+        public event GenericCrawlerMethodContainerError OnError;
+
         private MainService mainService;
         private string Domain { get; set; }
+
+        private List<string> DownloadedPages = new List<string>() { };
 
         public GenericCrawler(
             IPageService pageService,
@@ -25,19 +30,20 @@ namespace GenericSiteCrawler
 
         public async Task StartCrawlingAsync(string domain)
         {
-            mainService = new MainService(Domain);
+            this.Domain = domain;
+            mainService = new MainService(domain);
             mainService.OnPageSuccess += MainService_OnPageSuccess;
             mainService.OnError += MainService_OnError;
-            mainService.Start(Domain);
+            await mainService.StartLoadingPageAsync(Domain);
         }
 
-        private void MainService_OnPageSuccess(List<string> newLinks)
+        private async void MainService_OnPageSuccess(List<string> newLinks)
         {
             foreach (var link in newLinks)
             {
                 if (!DownloadedPages.Contains(link))
                 {
-                    mainService.Start(link);
+                    await mainService.StartLoadingPageAsync(link);
                     DownloadedPages.Add(link);
                 }
             }
@@ -46,19 +52,6 @@ namespace GenericSiteCrawler
         private void MainService_OnError(string message)
         {
             OnError(message);
-        }
-
-        public async Task TestDB()
-        {
-            Console.WriteLine($"TestDB");
-            var sites = await _websiteService.GetAllWebsitesAsync();
-            Console.WriteLine($"sites = {sites.Count()}");
-            _websiteService.CreateWebsite(new Website()
-            {
-                EnterUrl = $"Test from {DateTime.Now.ToString("HH:mm:ss.fff")}"
-            });
-            _websiteService.SaveWebsite();
-            Console.WriteLine("Saved");
         }
     }
 }

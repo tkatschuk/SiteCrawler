@@ -2,8 +2,11 @@
 
 namespace GenericSiteCrawler
 {
-    internal interface IGenericCrawler
+    delegate void GenericCrawlerMethodContainerError(string message);
+
+    interface IGenericCrawler
     {
         Task StartCrawlingAsync(string domain);
+        event GenericCrawlerMethodContainerError OnError;
     }
 }

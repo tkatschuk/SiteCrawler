@@ -11,14 +11,14 @@ namespace GenericSiteCrawler
         public delegate void MethodContainerError(string message);
         public event MethodContainerError OnError;        
 
-        public async Task Start(string Url)
+        public async Task StartAsync(string Url)
         {
             string domain;
             try
             {
                 domain = LinkNormalization.GetDomain(Url);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 OnError(ex.Message);
                 return;
@@ -27,9 +27,15 @@ namespace GenericSiteCrawler
             var container = AutofacContainerFactory.GetAutofacContainer();
             using (var scope = container.BeginLifetimeScope())
             {
-                var page = scope.Resolve<IGenericCrawler>();
-                await page.StartCrawlingAsync(domain);
+                var crawler = scope.Resolve<IGenericCrawler>();
+                crawler.OnError += Crawler_OnError;
+                await crawler.StartCrawlingAsync(domain);
             }
+        }
+
+        private void Crawler_OnError(string message)
+        {
+            OnError(message);
         }
     }
 }
