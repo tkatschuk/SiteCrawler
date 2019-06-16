@@ -1,6 +1,7 @@
 ﻿using GenericSiteCrawler;
 using NLog;
 using System;
+using System.Threading.Tasks;
 
 namespace SiteCrawler
 {
@@ -10,7 +11,7 @@ namespace SiteCrawler
 
         static void Main(string[] args)
         {
-            string url = "";
+            string url = "avpv.kz";
             if (args.Length > 0)
                 url = args[0];
             else
@@ -25,11 +26,11 @@ namespace SiteCrawler
                 return;
             }
 
-            var crawler = new Crawler(url);
+            var crawler = new Crawler();
             crawler.OnError += Crawler_OnError;
-            crawler.Start();
-            Console.WriteLine("END");
-            Console.ReadKey();
+            crawler.Start(url).Wait();
+            //Console.WriteLine("END");
+            //Console.ReadKey();
         }
 
         private static void Crawler_OnError(string message)

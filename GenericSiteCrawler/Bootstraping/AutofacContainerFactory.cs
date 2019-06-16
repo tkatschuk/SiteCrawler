@@ -13,18 +13,19 @@ namespace GenericSiteCrawler.Bootstraping
 
             builder.RegisterType<GenericCrawler>().As<IGenericCrawler>();
 
-            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();
-            builder.RegisterType<DbFactory>().As<IDbFactory>();
+            // DB Factory
+            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerLifetimeScope();
+            builder.RegisterType<DbFactory>().As<IDbFactory>().InstancePerLifetimeScope();
 
             // Repositories
             builder.RegisterAssemblyTypes(typeof(WebsiteRepository).Assembly)
                 .Where(t => t.Name.EndsWith("Repository"))
-                .AsImplementedInterfaces();
+                .AsImplementedInterfaces().InstancePerLifetimeScope();
 
             // Services
             builder.RegisterAssemblyTypes(typeof(WebsiteService).Assembly)
                 .Where(t => t.Name.EndsWith("Service"))
-                .AsImplementedInterfaces();
+                .AsImplementedInterfaces().InstancePerLifetimeScope();
 
             return builder.Build();
         }

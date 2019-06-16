@@ -2,8 +2,8 @@
 
 namespace GenericSiteCrawler
 {
-    public interface IGenericCrawler
+    internal interface IGenericCrawler
     {
-        Task TestDB();
+        Task StartCrawlingAsync(string domain);
     }
 }
