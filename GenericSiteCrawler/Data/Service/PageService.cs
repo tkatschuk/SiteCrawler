@@ -34,5 +34,15 @@ namespace GenericSiteCrawler.Data.Service
         {
             await _unitOfWork.CommitAsync();
         }
+
+        public async Task<bool> PageExist(int webSiteId, string url)
+        {
+            return await _pageRepository.AnyPage(x => x.Url == url && x.Website.Id == webSiteId);
+        }
+
+        public void UpdatePage(Page page)
+        {
+            _pageRepository.Update(page);
+        }
     }
 }

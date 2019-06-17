@@ -15,10 +15,10 @@ namespace GenericSiteCrawler
 
         public event GenericCrawlerMethodContainerError OnError;
 
+        private Website webSite = null;
+
         private MainService mainService;
         private string Domain { get; set; }
-
-        private List<string> DownloadedPages = new List<string>() { };
 
         public GenericCrawler(
             IPageService pageService,
@@ -34,19 +34,69 @@ namespace GenericSiteCrawler
             mainService = new MainService(domain);
             mainService.OnPageSuccess += MainService_OnPageSuccess;
             mainService.OnError += MainService_OnError;
-            await mainService.StartLoadingPageAsync(Domain);
+
+            webSite = new Website()
+            {
+                EnterUrl = domain
+            };
+            _websiteService.CreateWebsite(webSite);
+            try
+            {
+                await _websiteService.SaveWebsiteAsync();
+            }
+            catch(Exception ex)
+            {
+                OnError($"Error by saving webSite data to DB [{ex.Message}]");
+            }
+            var domainPage = new Page()
+            {
+                Url = domain,
+                Website = webSite
+            };
+            _pageService.CreatePage(domainPage);
+            try
+            {
+                await _pageService.SavePageAsync();
+            }
+            catch (Exception ex)
+            {
+                OnError($"Error to save page [{domain}] to BD [{ex.Message}]");
+            }
+
+            await mainService.StartLoadingPageAsync(domainPage);
         }
 
-        private async void MainService_OnPageSuccess(List<string> newLinks)
+        private async Task MainService_OnPageSuccess(Page downloadedPage, List<string> newLinks)
         {
-            foreach (var link in newLinks)
+            _pageService.UpdatePage(downloadedPage);
+            try
             {
-                if (!DownloadedPages.Contains(link))
-                {
-                    await mainService.StartLoadingPageAsync(link);
-                    DownloadedPages.Add(link);
-                }
+                await _pageService.SavePageAsync();
             }
+            catch(Exception ex)
+            {
+                OnError($"Error to set for page [{downloadedPage.Url}] status 'DOWNLOADED' in BD [{ex.Message}]");
+            }
+
+            foreach (var link in newLinks)
+                if (await _pageService.PageExist(webSite.Id, link) == false)
+                {
+                    var page = new Page()
+                    {
+                        Website = webSite,
+                        Url = link
+                    };
+                    _pageService.CreatePage(page);
+                    try
+                    {
+                        await _pageService.SavePageAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        OnError($"Error to save page [{link}] to BD [{ex.Message}]");
+                    }
+                    await mainService.StartLoadingPageAsync(page);
+                }
         }
 
         private void MainService_OnError(string message)

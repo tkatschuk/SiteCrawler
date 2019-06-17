@@ -28,7 +28,7 @@ namespace SiteCrawler
 
             var crawler = new Crawler();
             crawler.OnError += Crawler_OnError;
-            crawler.StartAsync(url).Wait();
+            crawler.StartAsync(url).GetAwaiter();
             Console.WriteLine("END");
             Console.ReadKey();
         }

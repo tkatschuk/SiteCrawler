@@ -8,6 +8,8 @@ namespace GenericSiteCrawler.Data.Service.Interface
     {
         Task<IEnumerable<Page>> GetAllPagesAsync(int webSiteId);
         void CreatePage(Page page);
+        void UpdatePage(Page page);
         Task SavePageAsync();
+        Task<bool> PageExist(int webSiteId, string url);
     }
 }
