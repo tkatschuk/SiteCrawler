@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using GenericSiteCrawler.Bootstraping;
+using GenericSiteCrawler.Services.Interface;
 using GenericSiteCrawler.Tools;
 using System;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace GenericSiteCrawler
             var container = AutofacContainerFactory.GetAutofacContainer();
             using (var scope = container.BeginLifetimeScope())
             {
-                var crawler = scope.Resolve<IGenericCrawler>();
+                var crawler = scope.Resolve<IMainService>();
                 crawler.OnError += Crawler_OnError;
                 await crawler.StartCrawlingAsync(domain);
             }

@@ -2,6 +2,8 @@
 using GenericSiteCrawler.Data.Infrastructure;
 using GenericSiteCrawler.Data.Repositories;
 using GenericSiteCrawler.Data.Service;
+using GenericSiteCrawler.Services;
+using GenericSiteCrawler.Services.Interface;
 
 namespace GenericSiteCrawler.Bootstraping
 {
@@ -11,7 +13,7 @@ namespace GenericSiteCrawler.Bootstraping
         {
             var builder = new ContainerBuilder();
 
-            builder.RegisterType<GenericCrawler>().As<IGenericCrawler>();
+            builder.RegisterType<MainService>().As<IMainService>();
 
             // DB Factory
             builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerLifetimeScope();

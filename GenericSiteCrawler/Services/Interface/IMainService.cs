@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 
-namespace GenericSiteCrawler
+namespace GenericSiteCrawler.Services.Interface
 {
     delegate void GenericCrawlerMethodContainerError(string message);
 
-    interface IGenericCrawler
+    interface IMainService
     {
         Task StartCrawlingAsync(string domain);
         event GenericCrawlerMethodContainerError OnError;

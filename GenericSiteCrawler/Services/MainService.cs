@@ -1,59 +1,107 @@
 ﻿using GenericSiteCrawler.Data.DomainModel;
-using GenericSiteCrawler.Tools;
-using NLog;
+using GenericSiteCrawler.Data.Service.Interface;
+using GenericSiteCrawler.Services.Interface;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GenericSiteCrawler.Services
 {
-    public class MainService
+    internal class MainService : IMainService
     {
-        private static readonly Logger logg = LogManager.GetLogger(nameof(MainService));
+        private readonly IPageService _pageService;
+        private readonly IWebsiteService _websiteService;
 
-        public delegate Task MethodContainerPageSuccess(Page downloadedPage, List<string> newLinks);
-        public event MethodContainerPageSuccess OnPageSuccess;
+        public event GenericCrawlerMethodContainerError OnError;
 
-        public delegate void MethodContainerError(string message);
-        public event MethodContainerError OnError;
+        private Website webSite = null;
 
+        private PageLoader mainService;
         private string Domain { get; set; }
 
-        public MainService(string domain)
+        public MainService(
+            IPageService pageService,
+            IWebsiteService websiteService)
         {
-            
-            Domain = domain;
+            _pageService = pageService;
+            _websiteService = websiteService;
         }
 
-        public async Task StartLoadingPageAsync(Page page)
+        public async Task StartCrawlingAsync(string domain)
         {
-            string loadUrl = LinkNormalization.NormalizeUrl(page.Url, Domain);
+            this.Domain = domain;
+            mainService = new PageLoader(domain);
+            mainService.OnPageSuccess += MainService_OnPageSuccess;
+            mainService.OnError += MainService_OnError;
 
-            var webClient = new WebClient()
+            webSite = new Website()
             {
-                Encoding = Encoding.UTF8
+                EnterUrl = domain
             };
-            string html = await webClient.DownloadStringTaskAsync(loadUrl);
+            _websiteService.CreateWebsite(webSite);
+            try
+            {
+                await _websiteService.SaveWebsiteAsync();
+            }
+            catch(Exception ex)
+            {
+                OnError($"Error by saving webSite data to DB [{ex.Message}]");
+            }
+            var domainPage = new Page()
+            {
+                Url = domain,
+                Website = webSite
+            };
+            _pageService.CreatePage(domainPage);
+            try
+            {
+                await _pageService.SavePageAsync();
+            }
+            catch (Exception ex)
+            {
+                OnError($"Error to save page [{domain}] to BD [{ex.Message}]");
+            }
 
-            var links = new LinkExtractor(html, Domain).StartExtract();
-
-            var filePath = LinkNormalization.GetFilePathFromUrl(page.Url, Domain);
-            if (!Directory.Exists(Path.GetDirectoryName(filePath)))
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            if (!Path.HasExtension(filePath))
-                filePath = filePath + ".htm";
-            new FileSaver().Save(filePath, LinkReplacer.Replace(html, links, Domain));
-
-            await OnPageSuccess(page, links);
+            await mainService.StartLoadingPageAsync(domainPage);
         }
 
-        private void PageDownloader_OnPageError(string link, string message)
+        private async Task MainService_OnPageSuccess(Page downloadedPage, List<string> newLinks)
         {
-            OnError($"{message} | URL=[{link}]");
+            downloadedPage.Downloaded = true;
+            _pageService.UpdatePage(downloadedPage);
+            try
+            {
+                await _pageService.SavePageAsync();
+            }
+            catch(Exception ex)
+            {
+                OnError($"Error to set for page [{downloadedPage.Url}] status 'DOWNLOADED' in BD [{ex.Message}]");
+            }
+
+            foreach (var link in newLinks)
+                if (await _pageService.PageExist(webSite.Id, link) == false)
+                {
+                    var page = new Page()
+                    {
+                        Website = webSite,
+                        Url = link
+                    };
+                    _pageService.CreatePage(page);
+                    try
+                    {
+                        await _pageService.SavePageAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        OnError($"Error to save page [{link}] to BD [{ex.Message}]");
+                    }
+                    await mainService.StartLoadingPageAsync(page);
+                }
         }
 
+        private void MainService_OnError(string message)
+        {
+            OnError(message);
+        }
     }
 }
