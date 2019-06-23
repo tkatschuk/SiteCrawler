@@ -12,7 +12,7 @@ namespace GenericSiteCrawler
         public delegate void MethodContainerError(string message);
         public event MethodContainerError OnError;        
 
-        public async Task StartAsync(string Url)
+        public void Start(string Url)
         {
             string domain;
             try
@@ -30,7 +30,7 @@ namespace GenericSiteCrawler
             {
                 var crawler = scope.Resolve<IMainService>();
                 crawler.OnError += Crawler_OnError;
-                await crawler.StartCrawlingAsync(domain);
+                crawler.StartCrawling(domain);
             }
         }
 

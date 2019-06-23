@@ -23,7 +23,6 @@ namespace GenericSiteCrawler.Services
 
         public PageLoader(string domain)
         {
-            
             Domain = domain;
         }
 

@@ -6,6 +6,7 @@ namespace GenericSiteCrawler.Services.Interface
 
     interface IMainService
     {
+        void StartCrawling(string domain);
         Task StartCrawlingAsync(string domain);
         event GenericCrawlerMethodContainerError OnError;
     }
