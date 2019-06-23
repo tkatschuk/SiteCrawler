@@ -9,7 +9,9 @@ namespace GenericSiteCrawler.Data.Service.Interface
         Task<IEnumerable<Page>> GetAllPagesAsync(int webSiteId);
         void CreatePage(Page page);
         void UpdatePage(Page page);
+        void SavePage();
         Task SavePageAsync();
-        Task<bool> PageExist(int webSiteId, string url);
+        Task<bool> PageExistAsync(int webSiteId, string url);
+        bool PageExist(int webSiteId, string url);
     }
 }

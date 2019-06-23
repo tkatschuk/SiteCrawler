@@ -8,6 +8,7 @@ namespace GenericSiteCrawler.Data.Repositories.Interfaces
 {
     public interface IPageRepository : IRepository<Page>
     {
-        Task<bool> AnyPage(Expression<Func<Page, bool>> where);
+        Task<bool> AnyPageAsync(Expression<Func<Page, bool>> where);
+        bool AnyPage(Expression<Func<Page, bool>> where);
     }
 }

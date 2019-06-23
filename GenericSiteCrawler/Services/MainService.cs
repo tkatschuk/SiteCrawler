@@ -3,6 +3,7 @@ using GenericSiteCrawler.Data.Service.Interface;
 using GenericSiteCrawler.Services.Interface;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GenericSiteCrawler.Services
@@ -16,7 +17,7 @@ namespace GenericSiteCrawler.Services
 
         private Website webSite = null;
 
-        private PageLoader mainService;
+        private PageLoader pageLoader;
         private string Domain { get; set; }
 
         public MainService(
@@ -27,12 +28,12 @@ namespace GenericSiteCrawler.Services
             _websiteService = websiteService;
         }
 
-        public async Task StartCrawlingAsync(string domain)
+        public void StartCrawlingAsync(string domain)
         {
-            this.Domain = domain;
-            mainService = new PageLoader(domain);
-            mainService.OnPageSuccess += MainService_OnPageSuccess;
-            mainService.OnError += MainService_OnError;
+            //this.Domain = domain;
+            pageLoader = new PageLoader(domain);
+            //pageLoader.OnPageSuccess += MainService_OnPageSuccess;
+            pageLoader.OnError += MainService_OnError;
 
             webSite = new Website()
             {
@@ -41,7 +42,7 @@ namespace GenericSiteCrawler.Services
             _websiteService.CreateWebsite(webSite);
             try
             {
-                await _websiteService.SaveWebsiteAsync();
+                _websiteService.SaveWebsite();
             }
             catch(Exception ex)
             {
@@ -55,23 +56,48 @@ namespace GenericSiteCrawler.Services
             _pageService.CreatePage(domainPage);
             try
             {
-                await _pageService.SavePageAsync();
+                _pageService.SavePage();
             }
             catch (Exception ex)
             {
                 OnError($"Error to save page [{domain}] to BD [{ex.Message}]");
             }
-
-            await mainService.StartLoadingPageAsync(domainPage);
+            Work(domainPage.Url);
         }
 
-        private async Task MainService_OnPageSuccess(Page downloadedPage, List<string> newLinks)
+        private List<string> LoadedLinks = new List<string>() { };
+
+        private void Work(string url)
+        {
+            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss.fff")}: {url}");
+
+            LoadedLinks.Add(url);
+            var links = new List<string>();
+            if (pageLoader.StartLoading(url, out links)) // if has links for next pages
+            {
+                foreach(var p in links)
+                {
+                    if (LoadedLinks.Contains(p) == false)
+                    {
+                        //Work(p);
+
+                        var thread = new Thread(() =>
+                        {
+                            Work(p);
+                        });
+                        thread.Start();
+                    }
+                }
+            }
+        }
+
+        private void MainService_OnPageSuccess(Page downloadedPage, List<string> newLinks)
         {
             downloadedPage.Downloaded = true;
             _pageService.UpdatePage(downloadedPage);
             try
             {
-                await _pageService.SavePageAsync();
+                _pageService.SavePage();
             }
             catch(Exception ex)
             {
@@ -79,7 +105,7 @@ namespace GenericSiteCrawler.Services
             }
 
             foreach (var link in newLinks)
-                if (await _pageService.PageExist(webSite.Id, link) == false)
+                if (_pageService.PageExist(webSite.Id, link) == false)
                 {
                     var page = new Page()
                     {
@@ -89,15 +115,34 @@ namespace GenericSiteCrawler.Services
                     _pageService.CreatePage(page);
                     try
                     {
-                        await _pageService.SavePageAsync();
+                        _pageService.SavePage();
                     }
                     catch (Exception ex)
                     {
                         OnError($"Error to save page [{link}] to BD [{ex.Message}]");
                     }
-                    await mainService.StartLoadingPageAsync(page);
+
+                    //pageLoader.StartLoadingPageAsync(page);
+
+                    var thread = new Thread(() =>
+                    {
+                        //pageLoader.StartLoadingPageAsync(page);
+                    });
+                    thread.Start();
+                    thread.Join();
+
+                    //var thread = new Thread(SendPageToPageLoader);
+                    //thread.StartAsync(page);
+                    //await pageLoader.StartLoadingPageAsync(page);
                 }
         }
+
+        /*
+        private async void SendPageToPageLoader(object pageObject)
+        {
+            var page = (Page)pageObject;
+            await pageLoader.StartLoadingPageAsync(page);
+        }*/
 
         private void MainService_OnError(string message)
         {
