@@ -33,12 +33,6 @@
     <Reference Include="Autofac, Version=4.9.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.9.2\lib\net45\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.6.4\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -60,32 +54,11 @@
   <ItemGroup>
     <Compile Include="Bootstraping\AutofacContainerFactory.cs" />
     <Compile Include="Crawler.cs" />
-    <Compile Include="Data\Configuration\WebsiteConfiguration.cs" />
-    <Compile Include="Data\Configuration\PageConfiguration.cs" />
-    <Compile Include="Data\DomainModel\Page.cs" />
-    <Compile Include="Data\DomainModel\Website.cs" />
-    <Compile Include="Data\Infrastructure\DbFactory.cs" />
-    <Compile Include="Data\Infrastructure\Disposable.cs" />
-    <Compile Include="Data\Infrastructure\IDbFactory.cs" />
-    <Compile Include="Data\Infrastructure\IRepository.cs" />
-    <Compile Include="Data\Infrastructure\IUnitOfWork.cs" />
-    <Compile Include="Data\Infrastructure\RepositoryBase.cs" />
-    <Compile Include="Data\Infrastructure\UnitOfWork.cs" />
-    <Compile Include="Data\CrawlerDBContext.cs" />
-    <Compile Include="Data\Repositorie\Interface\IPageRepository.cs" />
-    <Compile Include="Data\Repositorie\PageRepository.cs" />
-    <Compile Include="Data\Repositorie\WebsiteRepository.cs" />
-    <Compile Include="Data\Repositorie\Interface\IWebsiteRepository.cs" />
-    <Compile Include="Data\Service\Interface\IPageService.cs" />
-    <Compile Include="Data\Service\PageService.cs" />
+    <Compile Include="Models\CrawlingProgress.cs" />
     <Compile Include="Services\MainService.cs" />
     <Compile Include="Services\Interface\IMainService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\FileSaver.cs" />
     <Compile Include="Services\LinkExtractor.cs" />
-    <Compile Include="Services\PageLoader.cs" />
-    <Compile Include="Data\Service\WebsiteService.cs" />
-    <Compile Include="Data\Service\Interface\IWebsiteService.cs" />
     <Compile Include="Tools\LinkNormalization.cs" />
     <Compile Include="Tools\LinkReplacer.cs" />
   </ItemGroup>

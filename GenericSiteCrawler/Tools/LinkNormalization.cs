@@ -43,7 +43,7 @@ namespace GenericSiteCrawler.Tools
 
             link = link.Replace("https://", "").Replace("http://", "").Replace(domain, "").Replace('?', '_').Replace('#', '_');
             if (string.IsNullOrEmpty(link))
-                link = "index.html";
+                link = "index.htm";
 
             if (link.Contains("\""))
                 link = link.Remove(link.IndexOf('"'), link.Length - link.IndexOf('"'));

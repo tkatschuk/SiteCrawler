@@ -1,16 +1,22 @@
 ﻿using Autofac;
 using GenericSiteCrawler.Bootstraping;
+using GenericSiteCrawler.Models;
 using GenericSiteCrawler.Services.Interface;
 using GenericSiteCrawler.Tools;
 using System;
-using System.Threading.Tasks;
 
 namespace GenericSiteCrawler
 {
     public class Crawler
     {
+        public delegate void MethodContainerCrawling(CrawlingProgress data);
+        public event MethodContainerCrawling OnCrawlingProgress;
+
+        public delegate void MethodContainerCompleted();
+        public event MethodContainerCompleted OnCrawlingCompleted;
+
         public delegate void MethodContainerError(string message);
-        public event MethodContainerError OnError;        
+        public event MethodContainerError OnError;
 
         public void Start(string Url)
         {
@@ -26,12 +32,10 @@ namespace GenericSiteCrawler
             }
 
             var container = AutofacContainerFactory.GetAutofacContainer();
-            using (var scope = container.BeginLifetimeScope())
-            {
-                var crawler = scope.Resolve<IMainService>();
-                crawler.OnError += Crawler_OnError;
-                crawler.StartCrawling(domain);
-            }
+            var scope = container.BeginLifetimeScope();
+            var crawler = scope.Resolve<IMainService>();
+            crawler.OnError += Crawler_OnError;
+            crawler.StartCrawling(domain);
         }
 
         private void Crawler_OnError(string message)
