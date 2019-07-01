@@ -18,12 +18,16 @@ namespace GenericSiteCrawler
         public delegate void MethodContainerError(string message);
         public event MethodContainerError OnError;
 
+        /// <summary>
+        /// Start crawling
+        /// </summary>
+        /// <param name="Url">Domain</param>
         public void Start(string Url)
         {
             string domain;
             try
             {
-                domain = LinkNormalization.GetDomain(Url);
+                domain = LinkNormalization.GetDomain(Url); //Try get domain-url
             }
             catch (Exception ex)
             {
@@ -32,23 +36,21 @@ namespace GenericSiteCrawler
             }
 
             var container = AutofacContainerFactory.GetAutofacContainer();
-            var scope = container.BeginLifetimeScope();
+            using (var scope = container.BeginLifetimeScope())
+            {
+                var mainService = scope.Resolve<IMainService>(); //Get mainService-object
+                mainService.OnError += (string message) =>
+                {
+                    OnError(message);
+                };
+                mainService.OnMainServiceProgressChanged += (CrawlingProgress data) => //Send event "Progress of crawling changed"
+                {
+                    OnCrawlingProgress(data);
+                };
 
-            var mainService = scope.Resolve<IMainService>();
-            mainService.OnError += (string message) =>
-            {
-                OnError(message);
-            };
-            mainService.OnMainServiceProgressChanged += (CrawlingProgress data) =>
-            {
-                OnCrawlingProgress(data);
-            };
-            mainService.OnMainServiceProgressCompleted += () =>
-            {
+                mainService.StartCrawling(domain); //Start  crawling
                 OnCrawlingProgressCompleted();
-            };
-
-            mainService.StartCrawling(domain);
+            }
         }
     }
 }
