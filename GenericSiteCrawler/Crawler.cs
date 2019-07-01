@@ -1,50 +1,56 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using Autofac;
+using GenericSiteCrawler.Bootstraping;
 using GenericSiteCrawler.Models;
-using GenericSiteCrawler.Services;
+using GenericSiteCrawler.Services.Interface;
 using GenericSiteCrawler.Tools;
+using System;
 
 namespace GenericSiteCrawler
 {
     public class Crawler
     {
+        public delegate void MethodContainerCrawling(CrawlingProgress data);
+        public event MethodContainerCrawling OnCrawlingProgress;
+
+        public delegate void MethodContainerCompleted();
+        public event MethodContainerCompleted OnCrawlingProgressCompleted;
+
         public delegate void MethodContainerError(string message);
         public event MethodContainerError OnError;
 
-        private List<string> DownloadedPages { get; set; } = new List<string>();
-
-        MainService mainService;
-        private string Domain { get; set; }
-
-        public Crawler(string domain)
+        /// <summary>
+        /// Start crawling
+        /// </summary>
+        /// <param name="Url">Domain</param>
+        public void Start(string Url)
         {
-            mainService = new MainService(domain);
-            Domain = domain;
-        }
-
-        public void Start()
-        {
-            mainService.OnPageSuccess += MainService_OnPageSuccess;
-            mainService.OnError += MainService_OnError;
-            mainService.Start(Domain);
-        }
-
-        private void MainService_OnError(string message)
-        {
-            OnError(message);
-        }
-
-        private void MainService_OnPageSuccess(List<string> newLinks)
-        {
-            foreach (var link in newLinks)
+            string domain;
+            try
             {
-                if (!DownloadedPages.Contains(link))
+                domain = LinkNormalization.GetDomain(Url); //Try get domain-url
+            }
+            catch (Exception ex)
+            {
+                OnError(ex.Message);
+                return;
+            }
+
+            var container = AutofacContainerFactory.GetAutofacContainer();
+            using (var scope = container.BeginLifetimeScope())
+            {
+                var mainService = scope.Resolve<IMainService>(); //Get mainService-object
+                mainService.OnError += (string message) =>
                 {
-                    mainService.Start(link);
-                    DownloadedPages.Add(link);
-                }
+                    OnError(message);
+                };
+                mainService.OnMainServiceProgressChanged += (CrawlingProgress data) => //Send event "Progress of crawling changed"
+                {
+                    OnCrawlingProgress(data);
+                };
+
+                mainService.StartCrawling(domain); //Start  crawling
+                OnCrawlingProgressCompleted();
             }
         }
-
     }
 }

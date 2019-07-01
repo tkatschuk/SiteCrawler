@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -8,40 +9,48 @@ namespace GenericSiteCrawler.Services
     public class LinkExtractor
     {
         private string PageHtml { get; set; }
-        private string DomainUrl { get; set; }
+        private string Domain { get; set; }
 
-        public LinkExtractor(string pageHtml, string domainUrl)
+        public LinkExtractor(string pageHtml, string domain)
         {
             PageHtml = pageHtml;
-            DomainUrl = domainUrl;
+            Domain = domain;
         }
 
         public List<string> StartExtract()
         {
             var result = new List<string>();
-            var mathes = Regex.Matches(PageHtml, $"(href|src)=\"(\\S*)\"");
-            if (mathes.Count ==0)
+            var matches = Regex.Matches(PageHtml, $"(href|src)=\"(\\S*)\"");
+            if (matches.Count == 0)
                 return result;
 
-            foreach(var m in mathes)
+            foreach (var m in matches)
             {
                 var url = m.ToString();
-                if (url.Contains("comsys"))
-                {
-                    var a = 2;
-                }
-                if (!string.IsNullOrEmpty(url))
-                {
-                    url = url.Trim().Remove(0, url.IndexOf("=\"") + 2).TrimEnd('"');
-                    if (!string.IsNullOrEmpty(url))
-                    {
-                        if (!(url.Contains("http") && !url.Contains(DomainUrl)))
-                            if (url != "javascript:void(0)" || url[0] == '/' || url.Contains(DomainUrl))
-                                result.Add(url);
-                    }
-                }
+                url = url.Substring(url.IndexOf('"') + 1, url.LastIndexOf('"') - url.IndexOf('"') - 1).Trim();
+
+                if (MatchLink(url))
+                    result.Add(url);
             }
             return result.Distinct().ToList();
+        }
+
+        private bool MatchLink(string link)
+        {
+            if (string.IsNullOrEmpty(link))
+                return false;
+            if (link == "/")
+                return false;
+
+            if (link.Contains("http"))
+                link = link.Replace("http://", "").Replace("https://", "");
+            if (link.IndexOf(Domain) == 0 || link.IndexOf($"www.{Domain}") == 0)
+                return true;
+
+            if (link[0] == '/')
+                return true;
+
+            return false;
         }
     }
 }
