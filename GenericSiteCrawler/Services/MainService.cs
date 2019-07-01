@@ -1,4 +1,5 @@
-﻿using GenericSiteCrawler.Services.Interface;
+﻿using GenericSiteCrawler.Models;
+using GenericSiteCrawler.Services.Interface;
 using GenericSiteCrawler.Tools;
 using System;
 using System.Collections.Generic;
@@ -7,12 +8,15 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Timers;
 
 namespace GenericSiteCrawler.Services
 {
     internal class MainService : IMainService
     {
-        public event GenericCrawlerMethodContainerError OnError;
+        public event MainServiceMethodContainerError OnError;
+        public event MainServiceMethodContainerCrawling OnMainServiceProgressChanged;
+        public event MainServiceMethodContainerCompleted OnMainServiceProgressCompleted;
 
         private string Domain { get; set; }
 
@@ -21,40 +25,28 @@ namespace GenericSiteCrawler.Services
         private List<string> downloadingPages = new List<string>() { };
         private List<string> pagesWithError = new List<string>() { };
 
+        private bool process = true;
+
         public void StartCrawling(string domain)
         {
             this.Domain = domain;
 
             pagesToDownloading.Add(domain);
 
-            MainThread();
-
-            /*
-            bool process = true;
-            while (process)
+            var processTimer = new System.Timers.Timer(1000);
+            processTimer.Elapsed += (Object s, ElapsedEventArgs e) =>
             {
-                Console.Title = $"{pagesToDownloading.Count}   >   {downloadingPages.Count}   >   {downloadedPages.Count} [with errors {pagesWithError.Count}]";
-
-                if (pagesToDownloading.Count == 0 && downloadingPages.Count == 0)
+                if (downloadedPages.Count > 0 &&
+                    downloadingPages.Count == 0 &&
+                    pagesToDownloading.Count == 0)
                 {
                     process = false;
-                    foreach(var link in downloadedPages)
-                    {
-                        Console.WriteLine($"+ {link}");
-                    }
-                    foreach (var link in pagesWithError)
-                    {
-                        Console.WriteLine($"- {link}");
-                    }
+                    processTimer.Enabled = false;
                 }
-                Thread.Sleep(500);
-            }
-            */
-        }
+            };
+            processTimer.Enabled = true;
 
-        private void MainThread()
-        {
-            while (true)
+            while (process)
             {
                 if (downloadingPages.Count < 10)
                 {
@@ -64,12 +56,14 @@ namespace GenericSiteCrawler.Services
                         pagesToDownloading.Remove(page);
                         downloadingPages.Add(page);
                         new Thread(StartDownloadingPage).Start(page);
+                        UpdateProgress();
                     }
                 }
             }
+            OnMainServiceProgressCompleted();
         }
 
-        private void StartDownloadingPage(object _pageUrl)
+        private async void StartDownloadingPage(object _pageUrl)
         {
             string pageUrl = (string)_pageUrl;
 
@@ -87,7 +81,7 @@ namespace GenericSiteCrawler.Services
             {
                 try
                 {
-                    var html = webClient.DownloadString(loadUrl);
+                    var html = await webClient.DownloadStringTaskAsync(loadUrl);
                     var links = new LinkExtractor(html, Domain).StartExtract();
                     File.WriteAllText(filePath, LinkReplacer.Replace(html, links, Domain));
 
@@ -112,7 +106,7 @@ namespace GenericSiteCrawler.Services
             {
                 try
                 {
-                    webClient.DownloadFile(loadUrl, filePath);
+                    await webClient.DownloadFileTaskAsync(loadUrl, filePath);
                     SetPageDownloaded(pageUrl);
                 }
                 catch(Exception ex)
@@ -120,24 +114,36 @@ namespace GenericSiteCrawler.Services
                     SetPageError(pageUrl);
                     OnError($"{DateTime.Now.ToString("HH:mm:ss.fff")}: {pageUrl} | ERROR [{ex.Message}]");
                 }
-            }            
+            }
         }
 
         private void SetPageError(string pageUrl)
         {
             downloadingPages.Remove(pageUrl);
             pagesWithError.Add(pageUrl);
+            UpdateProgress();
         }
 
         private void SetPageDownloaded(string pageUrl)
         {
             downloadingPages.Remove(pageUrl);
             downloadedPages.Add(pageUrl);
+            UpdateProgress();
         }
 
         private void MainService_OnError(string message)
         {
             OnError(message);
+        }
+
+        private void UpdateProgress()
+        {
+            OnMainServiceProgressChanged(
+                new CrawlingProgress(
+                    pagesToDownloading.Count,
+                    downloadingPages.Count,
+                    downloadedPages.Count,
+                    pagesWithError.Count));
         }
     }
 }

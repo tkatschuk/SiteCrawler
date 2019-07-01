@@ -27,9 +27,21 @@ namespace SiteCrawler
 
             var crawler = new Crawler();
             crawler.OnError += Crawler_OnError;
+            crawler.OnCrawlingProgress += Crawler_OnCrawlingProgress;
+            crawler.OnCrawlingProgressCompleted += Crawler_OnCrawlingProgressCompleted;
             crawler.Start(url);
-            Console.WriteLine("END");
+            Console.Write("Press any key for exit...");
             Console.ReadKey();
+        }
+
+        private static void Crawler_OnCrawlingProgressCompleted()
+        {
+            Console.WriteLine("Crawling completed");
+        }
+
+        private static void Crawler_OnCrawlingProgress(GenericSiteCrawler.Models.CrawlingProgress data)
+        {
+            Console.Title = $"Progress {data.ProgressInProcent}%    [Finded pages: {data.PagesFounded} | downloaded: {data.PagesDownloaded} | waiting pages {data.PagesWaitDownloading} | Errors: {data.PagesWithError}]";
         }
 
         private static void Crawler_OnError(string message)

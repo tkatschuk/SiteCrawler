@@ -2,6 +2,18 @@
 {
     public class CrawlingProgress
     {
+        public CrawlingProgress(
+            int _pagesWaitDownloading,
+            int _pagesInProgress,
+            int _pagesDownloaded,
+            int _pagesWithError)
+        {
+            PagesWaitDownloading = _pagesWaitDownloading;
+            PagesInProgress = _pagesInProgress;
+            PagesDownloaded = _pagesDownloaded;
+            PagesWithError = _pagesWithError;
+        }
+
         public int PagesWaitDownloading { get; set; }
 
         public int PagesInProgress { get; set; }
@@ -14,7 +26,7 @@
         {
             get
             {
-                return PagesDownloaded + PagesInProgress + PagesDownloaded + PagesWithError;
+                return PagesDownloaded + PagesInProgress + PagesWaitDownloading + PagesWithError;
             }
         }
 
@@ -24,7 +36,7 @@
             {
                 if (PagesFounded == 0)
                     return 0;
-                return 100 * PagesDownloaded / PagesWithError;
+                return 100 * (PagesDownloaded + PagesWithError) / PagesFounded;
             }
         }
     }

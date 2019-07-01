@@ -13,7 +13,7 @@ namespace GenericSiteCrawler
         public event MethodContainerCrawling OnCrawlingProgress;
 
         public delegate void MethodContainerCompleted();
-        public event MethodContainerCompleted OnCrawlingCompleted;
+        public event MethodContainerCompleted OnCrawlingProgressCompleted;
 
         public delegate void MethodContainerError(string message);
         public event MethodContainerError OnError;
@@ -33,14 +33,22 @@ namespace GenericSiteCrawler
 
             var container = AutofacContainerFactory.GetAutofacContainer();
             var scope = container.BeginLifetimeScope();
-            var crawler = scope.Resolve<IMainService>();
-            crawler.OnError += Crawler_OnError;
-            crawler.StartCrawling(domain);
-        }
 
-        private void Crawler_OnError(string message)
-        {
-            OnError(message);
+            var mainService = scope.Resolve<IMainService>();
+            mainService.OnError += (string message) =>
+            {
+                OnError(message);
+            };
+            mainService.OnMainServiceProgressChanged += (CrawlingProgress data) =>
+            {
+                OnCrawlingProgress(data);
+            };
+            mainService.OnMainServiceProgressCompleted += () =>
+            {
+                OnCrawlingProgressCompleted();
+            };
+
+            mainService.StartCrawling(domain);
         }
     }
 }
